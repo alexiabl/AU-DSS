@@ -16,7 +16,7 @@ func receiveMessage(conn net.Conn){
 	for {
 	msg, err := bufio.NewReader(conn).ReadString('\n')
 	if err != nil { 
-		fmt.Printl("SERVER ERROR")
+		fmt.Println("SERVER ERROR")
 		return 
 	}
 	fmt.Println(msg)
@@ -30,7 +30,10 @@ func main(){
 
 	fmt.Println("Enter Port:")
 	port, _ := reader.ReadString('\n')
-	final_addr := strings.Replace(ip+":"+port,"\n","",-1)
+	ip = strings.TrimSuffix(ip,"\n")
+	port = strings.TrimSuffix(port,"\n")
+
+	final_addr := net.JoinHostPort(ip,port)
 
 	fmt.Println("The address will be: ",final_addr)
 	conn, _ := net.Dial("tcp",final_addr)

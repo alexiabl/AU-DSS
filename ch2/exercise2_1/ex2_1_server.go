@@ -8,10 +8,12 @@ var connections = []net.Conn{}
  
 //broadcast of messages
 func broadcast(){
+	for {
 	msg := <-channel
 	for _,conn := range connections {
 		fmt.Fprintf(conn, msg)
 	}
+}
 }
 
 
@@ -35,14 +37,14 @@ func main(){
 	fmt.Println("Server started...")
 	name, _ := os.Hostname()
 	fmt.Println("Server name is: ",name)
-	listener, _ := net.Listen("tcp",":4444")
-
+	listener, _ := net.Listen("tcp",":")
+	_, port, _ := net.SplitHostPort(listener.Addr().String())
+	fmt.Println("Listening on port " + port)
+	go broadcast()
 
 	for{
-		go broadcast()
 		conn, _ := listener.Accept()
-		_, port, _ := net.SplitHostPort(listener.Addr().String())
-		fmt.Println("Listening on port " + port)
+
 		connections = append(connections,conn)
 		go handleConn(conn)
 	}
