@@ -21,17 +21,14 @@ func main(){
 	peers_network := []peer{}
 
 	fmt.Println("Hello! Welcome to my toy P2P Network\n")
-	fmt.Println("Enter peer's IP Address")
+	fmt.Println("Enter peer's IP Address and port")
 	reader := bufio.NewReader(os.Stdin)
-	ip, _ := reader.ReadString('\n')
+	address, _ := reader.ReadString('\n')
 
-	fmt.Println("Enter peer's port")
-	port, _ := reader.ReadString('\n')
+	listener 
 
-	address := strings.Join(ip,":")
-	final_addr := strings.Join(address,port)
 
-	fmt.Println("The address is: "+final_addr)
+
 	//how to append a string from user input without the \n
 
 	//check if peer exists in the network

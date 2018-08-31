@@ -2,26 +2,51 @@ package main
 
 import("fmt";"net";"bufio";"os")
 
-func main(){
-
-	fmt.Println("Server started...")
-
-	listener, _ := net.Listen("tcp",":4444")
-
-	name, _ := os.Hostname()
-	addrs, _ := net.LookupHost(name)
-	fmt.Println("Server address is: ",addrs)
-	conn, _ := listener.Accept()
-
-
-	for{
-		msg, _ := bufio.NewReader(conn).ReadString('\n')
-		if msg == "quit\n" { return }
-		fmt.Print("Message received - ", string(msg))
-		conn.Write([]byte(msg))
+//channel
+var channel = make(chan string)
+var connections = []net.Conn{}
+ 
+//broadcast of messages
+func broadcast(){
+	msg := <-channel
+	for _,conn := range connections {
+		fmt.Fprintf(conn, msg)
 	}
 }
 
+
+func handleConn(connection net.Conn){
+	fmt.Println("Connected to "+ connection.RemoteAddr().String())
+	for {
+		msg, error := bufio.NewReader(connection).ReadString('\n')
+		if (error !=nil) { 
+			fmt.Println("ERROR")
+			// remove connection
+			return
+		}else{
+			msg_from := "["+connection.RemoteAddr().String()+"]: "+msg
+			channel <- msg_from
+		}
+	}
+}
+
+func main(){
+
+	fmt.Println("Server started...")
+	name, _ := os.Hostname()
+	fmt.Println("Server name is: ",name)
+	listener, _ := net.Listen("tcp",":4444")
+
+
+	for{
+		go broadcast()
+		conn, _ := listener.Accept()
+		_, port, _ := net.SplitHostPort(listener.Addr().String())
+		fmt.Println("Listening on port " + port)
+		connections = append(connections,conn)
+		go handleConn(conn)
+	}
+}
 
 /*
  When the client is started it prompts the user for and IP address and port

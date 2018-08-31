@@ -1,26 +1,47 @@
 package main
 
-import ( "bufio" ; "fmt" ; "net"; "os")
+import ( "bufio" ; "fmt" ; "net"; "os"; "strings")
 
+func sendMessage(conn net.Conn){
+	reader := bufio.NewReader(os.Stdin)
+	text, _ := reader.ReadString('\n')
+	if text == "quit\n" { return }
+	fmt.Fprintf(conn,text)
+}
+
+
+//go routine for receiving messages
+
+func receiveMessage(conn net.Conn){
+	for {
+	msg, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil { 
+		fmt.Printl("SERVER ERROR")
+		return 
+	}
+	fmt.Println(msg)
+	}
+}
 
 func main(){
-	fmt.Println("Enter IP Address and port ")
+	fmt.Println("Enter IP Address:")
 	reader := bufio.NewReader(os.Stdin)
-	address, _ := reader.ReadString('\n')
+	ip, _ := reader.ReadString('\n')
 
-	fmt.Println("The address will be: ",address)
-	conn, _ := net.Dial("tcp",address)
-	if (conn!=nil) { defer conn.Close() }
+	fmt.Println("Enter Port:")
+	port, _ := reader.ReadString('\n')
+	final_addr := strings.Replace(ip+":"+port,"\n","",-1)
+
+	fmt.Println("The address will be: ",final_addr)
+	conn, _ := net.Dial("tcp",final_addr)
+	
+	defer conn.Close()
+
+	go receiveMessage(conn)
 
 	for{
-		    // read in input from stdin
-			fmt.Print("Text to send: ")
-			text, err := reader.ReadString('\n')
-			if text == "quit\n" { return }
-			fmt.Fprintf(conn, text)
-			msg, err := bufio.NewReader(conn).ReadString('\n')
-			if err != nil { return }
-			fmt.Print("From server: " + msg)
+		sendMessage(conn)
 	}
+
 }
 
